@@ -1,0 +1,7 @@
+3 tabellen.
+tag, bevat enkel alle mogelijke tags.
+records, bevat de records voor een stuk tekst
+	kolommen:	time timestamp, tags int, location varchar(50), description varchar(500)
+		TIME default naar NOW()
+tags, bevat 2 kolommen, een id en een hoop tags.
+	kolommen: ID int, tag char(20)
