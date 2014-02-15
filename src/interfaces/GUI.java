@@ -1,6 +1,7 @@
 package interfaces;
 
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -17,6 +18,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import util.CustomListSelectionModel;
 import util.JTextAreaHint;
 import util.Tags;
 import connection.Connector;
@@ -24,6 +26,7 @@ import connection.SQLCommander;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
@@ -33,22 +36,23 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-public class GUI extends JFrame implements ActionListener,ComponentListener, DocumentListener,ListSelectionListener{
+public class GUI extends JFrame implements ActionListener, DocumentListener,ListSelectionListener{
     
 	private JList<String> tagBoxes1;
 	private JList<String> tagBoxes2;
 	private JPanel textFields;
 	private JScrollPane descriptionScroller;
-	private JTextArea	descriptionArea;
+	private JTextAreaHint	descriptionArea;
 	private JScrollPane locationScroller;
-	private JTextArea	locationArea;
+	private JTextAreaHint	locationArea;
 	private JButton saveButton;
-	
 	public static final String DEFAULT_DESC = "Description";
 	public static final String DEFAULT_LOC = "Location";
 	public static final Color color = new Color(255f/255f,100f/255f,0f/255f);
@@ -85,7 +89,6 @@ public class GUI extends JFrame implements ActionListener,ComponentListener, Doc
     	this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	Connector.makeConnector(ip, port, username, password);
     	
-    	
     	this.setSize(new Dimension(800,400));
     	
     	Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -97,31 +100,26 @@ public class GUI extends JFrame implements ActionListener,ComponentListener, Doc
     	this.setBackground(color);
     	this.getContentPane().setBackground(color);
     	
-    	Tags tags1 = null;
-    	Tags tags2 = null;
-        try {
-        	tags1 = SQLCommander.getTags(1);
-        	tags2 = SQLCommander.getTags(2);
-		} catch (SQLException e) {
-			System.err.println("Could not retrive tags, SQLException.");
-			System.exit(0);
-		}
+    	
         
         
         final JPanel tagPanel = new JPanel(new BorderLayout(0,0));
         tagPanel.setBackground(color);
         
-        tagBoxes1 = new JList<String>(tags1.getArray());
+        tagBoxes1 = new JList<String>();
         tagBoxes1.addListSelectionListener(this);
-        tagBoxes1.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        tagBoxes2 = new JList<String>(tags2.getArray());
+        tagBoxes1.setSelectionModel(new CustomListSelectionModel());
+        tagBoxes2 = new JList<String>();
         tagBoxes2.addListSelectionListener(this);
-        tagBoxes2.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        tagBoxes2.setSelectionModel(new CustomListSelectionModel());
+        
+        this.fillTagLists();
+        
         JScrollPane tag1Scroller = new JScrollPane(tagBoxes1);
         JScrollPane tag2Scroller = new JScrollPane(tagBoxes2);
         
-        tagPanel.add(tag1Scroller,BorderLayout.EAST);
-        tagPanel.add(tag2Scroller,BorderLayout.WEST);
+        tagPanel.add(tag1Scroller,BorderLayout.WEST);
+        tagPanel.add(tag2Scroller,BorderLayout.EAST);
         
         descriptionArea = new JTextAreaHint(DEFAULT_DESC);
         descriptionArea.getDocument().addDocumentListener(this);
@@ -140,15 +138,53 @@ public class GUI extends JFrame implements ActionListener,ComponentListener, Doc
         saveButton = new JButton("Save");
         saveButton.addActionListener(this);
         
+        JPanel menuPanel = new JPanel(new BorderLayout(1,1));
+        JPanel menuButtons = new JPanel();
+        BoxLayout boxLayout = new BoxLayout(menuButtons,BoxLayout.Y_AXIS);
+        menuButtons.setLayout(boxLayout);
+        menuPanel.setBackground(color);
         
+        JButton manageTags = new JButton("manage tags");
+        manageTags.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new TagsManager();
+				
+			}
+		}); //TODO Dit niet meerdere keren laten openen.
+        manageTags.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        
+        JButton updateTags = new JButton("update tags");
+        updateTags.addActionListener(new TagUpdateListener(this));
+        updateTags.setAlignmentX(Component.CENTER_ALIGNMENT);
+        menuButtons.add(updateTags);
+        menuButtons.add(manageTags);
+        
+        menuPanel.add(menuButtons,BorderLayout.SOUTH);
+        menuPanel.add(tagPanel,BorderLayout.CENTER);
         
         this.add(saveButton,BorderLayout.EAST);
         this.add(textFields);
-        this.add(tagPanel,BorderLayout.WEST);
+        this.add(menuPanel,BorderLayout.WEST);
         this.setVisible(true);
-        this.addComponentListener(this);
         saveButton.setEnabled(false);
         Terminal.acceptInput();
+    }
+    
+    private void fillTagLists(){
+    	Tags tags1 = null;
+    	Tags tags2 = null;
+        try {
+        	tags1 = SQLCommander.getTags(1);
+        	tags2 = SQLCommander.getTags(2);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.err.println("Could not retrieve tags, SQLException.");
+			System.exit(0);
+		}
+        tagBoxes1.setListData(tags1.getArray());
+        tagBoxes2.setListData(tags2.getArray());
     }
 
 	@Override
@@ -164,37 +200,10 @@ public class GUI extends JFrame implements ActionListener,ComponentListener, Doc
 		try {
 			SQLCommander.insertRecord(tags, descriptionArea.getText(), locationArea.getText());
 			saveButton.setEnabled(false);
-			//tagBoxes.clearSelection();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
-	@Override
-	public void componentHidden(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void componentMoved(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void componentResized(ComponentEvent e) {
-		//descriptionScroller.setPreferredSize(new Dimension(textFields.getSize().width/2, textFields.getSize().height));
-		//locationScroller.setPreferredSize(new Dimension(textFields.getSize().width/2, textFields.getSize().height));
-	}
-
-	@Override
-	public void componentShown(ComponentEvent e) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	@Override
 	public void changedUpdate(DocumentEvent arg0) {
 		
@@ -217,6 +226,19 @@ public class GUI extends JFrame implements ActionListener,ComponentListener, Doc
 	}    
 	
 	public boolean allowSave(){
-		return !descriptionArea.getText().equals("") && !locationArea.getText().equals("") && tagBoxes1.getSelectedValuesList().size()!=0 && tagBoxes2.getSelectedValuesList().size()!=0;
+		return descriptionArea.hasInput() && locationArea.hasInput() && tagBoxes1.getSelectedValuesList().size()!=0 && tagBoxes2.getSelectedValuesList().size()!=0;
 	}
+	private class TagUpdateListener implements ActionListener{
+		private GUI gui;
+		public TagUpdateListener(GUI gui){
+			this.gui = gui;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			gui.fillTagLists();
+		}
+	}
+	
 }
+

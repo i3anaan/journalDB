@@ -14,10 +14,6 @@ public class SQLCommander {
 
 	private static final String tableName = "Notes";
 
-	public static String makeInsert(String[] tags, String description){
-		//return "INSERT INTO "+tableName+" VALUES("
-		return null;
-	}
 	
 	/**
 	 * Gives a ArrayList<String> which contains all the possible tags (extracted from the tag table)
@@ -28,7 +24,8 @@ public class SQLCommander {
 	public static Tags getTags(int inuse) throws SQLException{
 		Statement stat = Connector.getConnector().getStatement();
 		Tags arr = new Tags();
-		ResultSet set = stat.executeQuery("SELECT * FROM taglist");// WHERE inuse =="+inuse+";");
+		ResultSet set = stat.executeQuery("SELECT * FROM taglist WHERE inuse ="+inuse+";");
+		//INSERT INTO myjournal.tagList values(('Project 1',2),('Project 2',2),('Book',1),('useless',0),('Internet',1),('philosopy',1));
 		if (set.first()) {
 			arr.add(set.getNString("tag"));
 			while (!set.isLast()) {
@@ -70,6 +67,11 @@ public class SQLCommander {
 		}
 	}
 	
+
+	public static void insertTag(String name, int inuse) throws SQLException{
+		Statement stat = Connector.getConnector().getStatement();
+		stat.execute("INSERT INTO tagList values('"+name+"',"+inuse+ ");");
+	}
 	public static void reset() throws SQLException{
 		Statement stat = Connector.getConnector().getStatement();
 		

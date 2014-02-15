@@ -33,8 +33,11 @@ public class Connector {
 		try {
 			con = getConnection(connectionProps,ip,port);
 		} catch (SQLException e) {
-			System.out.println("Connection failed");
-			e.printStackTrace();
+			if(e.getErrorCode()==1045){	//Wrong account info
+				System.out.println("Wrong account info, Connection failed.");
+			}else{
+				System.out.println("Connection failed");
+			}
 			System.exit(0);
 		}
 	}

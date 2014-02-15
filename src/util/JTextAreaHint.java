@@ -29,5 +29,9 @@ public class JTextAreaHint extends JTextArea implements FocusListener{
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public boolean hasInput(){
+		return !showingHint && !this.getText().equals("");
+	}
 
 }
