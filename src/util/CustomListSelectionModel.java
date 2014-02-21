@@ -30,22 +30,3 @@ public class CustomListSelectionModel extends DefaultListSelectionModel implemen
 		lastSelectedIndex = -1;		
 	}
 }
-/*
-public class EndPage extends ImagePage implements ActionListener {
-	private static final long serialVersionUID = 1L;
-	Timer timer;
-
-	public EndPage(WizardClient parent, String path,String title) {
-		super(parent, path, true, false);
-		parent.setPositionTitle(title);
-
-		int delay = 5000; // milliseconds
-		timer = new Timer(delay, this);
-		timer.setRepeats(false);
-		timer.start();
-	}
-	public void actionPerformed(ActionEvent evt) {
-		parent.gotoStartPage();
-	}
-
-}*/
