@@ -1,1 +1,47 @@
-SELECT * FROM records;
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+CREATE SCHEMA IF NOT EXISTS `myjournal` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+USE `myjournal` ;
+
+-- -----------------------------------------------------
+-- Table `myjournal`.`tagList`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `myjournal`.`tagList` ;
+
+CREATE TABLE IF NOT EXISTS `myjournal`.`tagList` (
+  `tag` CHAR(20) NOT NULL,
+  `inuse` INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`tag`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `myjournal`.`records`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `myjournal`.`records` ;
+
+CREATE TABLE IF NOT EXISTS `myjournal`.`records` (
+  `timestamp` DATETIME NOT NULL DEFAULT NOW(),
+  `tag` INT NULL,
+  `location` VARCHAR(500) NOT NULL,
+  `description` VARCHAR(5000) NOT NULL,
+  PRIMARY KEY (`timestamp`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `myjournal`.`tags`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `myjournal`.`tags` ;
+
+CREATE TABLE IF NOT EXISTS `myjournal`.`tags` (
+  `id` INT NOT NULL,
+  `tag` VARCHAR(20) NULL)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

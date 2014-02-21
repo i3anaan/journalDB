@@ -4,6 +4,7 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
@@ -117,8 +118,9 @@ public class GUI extends JFrame implements ActionListener, DocumentListener,List
         
         JScrollPane tag1Scroller = new JScrollPane(tagBoxes1);
         JScrollPane tag2Scroller = new JScrollPane(tagBoxes2);
+        //tag1Scroller.setPreferredSize(new Dimension());
         
-        tagPanel.add(tag1Scroller,BorderLayout.WEST);
+        tagPanel.add(tag1Scroller,BorderLayout.CENTER);
         tagPanel.add(tag2Scroller,BorderLayout.EAST);
         
         descriptionArea = new JTextAreaHint(DEFAULT_DESC);
@@ -154,12 +156,30 @@ public class GUI extends JFrame implements ActionListener, DocumentListener,List
 		}); //TODO Dit niet meerdere keren laten openen.
         manageTags.setAlignmentX(Component.CENTER_ALIGNMENT);
         
+        JButton resetButton = new JButton("reset database");
+        resetButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(new JOptionPane().showConfirmDialog(new JFrame(), "Reset really?")==JOptionPane.YES_OPTION){
+					try {
+						SQLCommander.reset();
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					fillTagLists();
+				};
+			}
+		}); //TODO Dit niet meerdere keren laten openen.
+        resetButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
         
         JButton updateTags = new JButton("update tags");
         updateTags.addActionListener(new TagUpdateListener(this));
         updateTags.setAlignmentX(Component.CENTER_ALIGNMENT);
         menuButtons.add(updateTags);
         menuButtons.add(manageTags);
+        menuButtons.add(resetButton);
         
         menuPanel.add(menuButtons,BorderLayout.SOUTH);
         menuPanel.add(tagPanel,BorderLayout.CENTER);

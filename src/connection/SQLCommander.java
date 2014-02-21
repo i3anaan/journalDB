@@ -1,12 +1,15 @@
 package connection;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import util.Tags;
 
@@ -72,11 +75,12 @@ public class SQLCommander {
 		Statement stat = Connector.getConnector().getStatement();
 		stat.execute("INSERT INTO tagList values('"+name+"',"+inuse+ ");");
 	}
+	
 	public static void reset() throws SQLException{
 		Statement stat = Connector.getConnector().getStatement();
 		
 		try {
-			makeBatch(stat,"src/DatabaseSchema");
+			makeBatch2(stat,"src/DatabaseSchema");
 			stat.executeBatch();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -98,5 +102,18 @@ public class SQLCommander {
 	    } finally {
 	        br.close();
 	    }
+	}
+	
+	private static void makeBatch2(Statement stat, String fileName) throws FileNotFoundException, SQLException{
+		String text = new Scanner(new File(fileName)).useDelimiter("\\A").next();
+		Scanner textScanner = new Scanner(text).useDelimiter(";");
+		
+		while(textScanner.hasNext()){
+			String command = (textScanner.next()).trim();
+			if(!command.equals("")){
+				stat.addBatch(command+";");
+				//System.out.println(command+";");
+			}
+		}
 	}
 }
